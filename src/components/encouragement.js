@@ -5,7 +5,7 @@ export default [
   `Better days are coming`,
   `Take a deep breath`,
   `It will all work out`,
-  `You will survive`,
+  `There's nothing to worry about`,
   `You deserve to be loved`,
   `You've got this`,
   `You are good enough`,

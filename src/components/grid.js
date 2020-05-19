@@ -178,12 +178,12 @@ class Grid {
     return clears
   }
 
-  clearLines(clears) {
+  clearLines(clears, callback) {
     for (const lIndex of clears) {
       this.grid.splice(lIndex, 1, makeLine())
     }
   
-    this.forceSettle()
+    this.forceSettle(callback)
   }
 
   forceSettle(callback) {

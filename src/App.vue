@@ -3,11 +3,11 @@
     <div class="container">
       <div class="header">
         <h2>No Stress Tetris</h2>
+        <h4>Score: {{ score }}</h4>
       </div>
       <div class="body">
-        <div class="score"></div>
         <div class="game">
-          <Game></Game>
+          <Game @line-cleared="lineCleared"></Game>
           <Instructions></Instructions>
         </div>
       </div>
@@ -24,6 +24,16 @@ export default {
   components: {
     Game,
     Instructions
+  },
+  data() {
+    return {
+      score: 0
+    }
+  },
+  methods: {
+    lineCleared() {
+      this.score = 'a billion'
+    }
   }
 }
 </script>

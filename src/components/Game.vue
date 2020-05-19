@@ -12,6 +12,7 @@
           v-for="(cell, cIndex) in line" 
           :key="`line-${lIndex}-cell-${cIndex}`">
         </div>
+        <div class="message" v-text="message"></div>
       </template>
     </div>
   </div>
@@ -22,6 +23,7 @@ import Clock from './clock'
 import grid from './grid'
 import { chooseBlock } from './block'
 import { KeyboardListener, Keys } from './keyboard'
+import encouragement from './encouragement'
 
 const startingSpeedInMs = 700
 
@@ -32,7 +34,8 @@ export default {
       clears: [],
       clock: null,
       grid: null,
-      keyboardListener: null
+      keyboardListener: null,
+      message: ''
     }
   },
   mounted() {
@@ -70,20 +73,29 @@ export default {
         return
       }
 
+      this.$emit('line-cleared')
+
       this.clock.pause()
 
+      this.message = ''
       this.clears = clears
       setTimeout(() => {
         this.clearing = true
+        this.getEncouragement()
       }, 100)
       setTimeout(() => {
         const clears = this.clears
         this.clears = []
-        grid.clearLines(clears)
-        this.clearing = false
-        callback()
-        this.clock.resume()
-      }, 600)
+        grid.clearLines(clears, () => {
+          this.clearing = false
+          callback()
+          this.clock.resume()
+        })
+      }, 1000)
+    },
+    getEncouragement() {
+      const randomIndex = Math.floor(Math.random() * encouragement.length)
+      this.message = encouragement[randomIndex] + '!'
     },
     getStyle(cell) {
       return {
@@ -118,6 +130,7 @@ export default {
 .line {
   display: flex;
   flex-direction: row;
+  position: relative;
 }
 
 .cell {
@@ -135,8 +148,8 @@ export default {
   transition: background-color 500ms, box-shadow 500ms;
 }
 
-.cell.cell-cleared.clearing {
-  background-color: #fff;
+.cell.cell-cleared.cell-clearing {
+  background-color: rgba(173,216,230, 0.4);
   box-shadow: none;
 }
 
@@ -148,6 +161,18 @@ export default {
   position: absolute;
   width: 100%;
   z-index: 2;
+}
+
+.message {
+  align-items: center;
+  bottom: 0;
+  display: flex;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 </style>

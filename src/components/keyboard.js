@@ -14,10 +14,10 @@ export class KeyboardListener {
   }
 
   onKeyDown(e) {
-    e.preventDefault()
     const key = e.key
     for (const subscriber of this.subscribers) {
       if (subscriber.key === key) {
+        e.preventDefault()
         subscriber.callback()
       }
     }
