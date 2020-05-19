@@ -77,16 +77,25 @@ class Grid {
         if (!cell.hasBlock) {
           continue
         }
+
+        const currentBlockRelativeY = lIndex - this.currentBlock.coordinates[0]
+        const currentBlockRelativeX = cIndex - this.currentBlock.coordinates[1]
+        const currentBlockLine = this.currentBlock.blockType.grid[currentBlockRelativeY]
+        const isCurrentBlock = currentBlockLine && currentBlockLine[currentBlockRelativeX]
   
         if (lIndex === this.grid.length - 1) {
-          this.currentBlock.hasTouchedBottom = true
+          if (isCurrentBlock) {
+            this.currentBlock.hasTouchedBottom = true
+          }
           hypotheticalGrid[lIndex].splice(cIndex, 1, cell)
           continue
         }
   
         let downOneCell = hypotheticalGrid[lIndex + 1][cIndex]
         if (downOneCell.hasBlock) {
-          this.currentBlock.hasTouchedBottom = true
+          if (isCurrentBlock) {
+            this.currentBlock.hasTouchedBottom = true
+          }
           hypotheticalGrid[lIndex].splice(cIndex, 1, cell)
         } else {
           hypotheticalGrid[lIndex + 1].splice(cIndex, 1, cell)
@@ -191,6 +200,10 @@ class Grid {
   }
 
   moveCurrentBlockLeft() {
+    if (this.currentBlock.hasTouchedBottom) {
+      return false
+    }
+
     const blockHeight = this.currentBlock.blockType.grid.length
     const blockWidth = this.currentBlock.blockType.grid[0].length
 
@@ -223,6 +236,10 @@ class Grid {
   }
 
   moveCurrentBlockRight() {
+    if (this.currentBlock.hasTouchedBottom) {
+      return false
+    }
+
     const blockHeight = this.currentBlock.blockType.grid.length
     const blockWidth = this.currentBlock.blockType.grid[0].length
   
@@ -255,6 +272,10 @@ class Grid {
   }
 
   rotateCurrentBlock() {
+    if (this.currentBlock.hasTouchedBottom) {
+      return false
+    }
+
     const blockHeight = this.currentBlock.blockType.grid.length
     const blockWidth = this.currentBlock.blockType.grid[0].length
   
@@ -272,6 +293,7 @@ class Grid {
       return false
     }
   
+    // Erase current block
     for (let y = 0; y < blockHeight; y++) {
       const line = this.grid[this.currentBlock.coordinates[0] + y]
       for (let x = 0; x < blockWidth; x++) {
@@ -279,6 +301,7 @@ class Grid {
       }
     }
   
+    // Add rotated block
     for (let y = 0; y < rotationHeight; y++) {
       const line = this.grid[this.currentBlock.coordinates[0] + y]
       for (let x = 0; x < rotationWidth; x++) {
@@ -288,6 +311,8 @@ class Grid {
         })
       }
     }
+    
+    this.currentBlock.blockType.grid = rotation
   
     return true
   }

@@ -8,5 +8,7 @@ export default [
   `You will survive`,
   `You deserve to be loved`,
   `You've got this`,
-  `You are good enough`
+  `You are good enough`,
+  `You are smart enough`,
+  `We're rooting for you`
 ]
