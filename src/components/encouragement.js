@@ -6,9 +6,11 @@ export default [
   `Take a deep breath`,
   `It will all work out`,
   `There's nothing to worry about`,
-  `You deserve to be loved`,
+  `You are loved`,
   `You've got this`,
   `You are good enough`,
   `You are smart enough`,
-  `We're rooting for you`
+  `We're rooting for you`,
+  `You're perfect just the way you are`,
+  `You're doing a great job`
 ]
