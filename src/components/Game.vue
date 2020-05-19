@@ -102,16 +102,21 @@ export default {
         'background-color': cell.color
       }
     },
+    nextBlock() {
+      const block = chooseBlock()
+      const canCreate = grid.createBlock(block)
+      if (!canCreate) {
+        console.log('cannot create block')
+        this.beginClearLines([this.grid.length - 1, this.grid.length - 2], () => this.nextBlock())
+      }      
+    },
     tick() {
       const settled = grid.isSettled()
       if (!settled) {
         grid.exertGravity()
       } else {
         const clears = grid.getLineClears()
-        this.beginClearLines(clears, () => {
-          const block = chooseBlock()
-          grid.createBlock(block)
-        })
+        this.beginClearLines(clears, () => this.nextBlock())
       }
     }
   },
