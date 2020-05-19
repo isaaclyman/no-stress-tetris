@@ -9,13 +9,39 @@
 </template>
 
 <script>
-import grid from './grid'
+import clock from './clock'
+import grid, { isSettled, exertGravity, createBlock } from './grid'
+import { chooseBlock } from './block'
+
+const startingSpeedInMs = 600
 
 export default {
   data() {
     return {
+      clock: null,
       grid
     }
+  },
+  mounted() {
+    this.clock = new clock(startingSpeedInMs)
+    this.clock.subscribe(() => this.tick())
+  },
+  methods: {
+    tick() {
+      console.log('tick')
+      const settled = isSettled(grid)
+      if (!settled) {
+        exertGravity(grid)
+      } else {
+        const block = chooseBlock()
+        createBlock(grid, block)
+      }
+
+      // check for line clears
+    }
+  },
+  destroyed() {
+    this.clock.destroy()
   }
 }
 </script>
