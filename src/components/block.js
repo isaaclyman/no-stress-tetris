@@ -1,5 +1,5 @@
 function createBlockType(color, grid) {
-  return {color, grid}
+  return () => ({color, grid})
 }
 
 export const blockTypes = {
@@ -46,9 +46,37 @@ export const blockTypes = {
   ),
 }
 
+export function rotate(blockGrid) {
+  const blockHeight = blockGrid.length
+  const blockWidth = blockGrid[0].length
+
+  const newGrid = []
+  for (let x = blockWidth - 1; x >= 0; x--) {
+    const line = []
+    for (let y = 0; y < blockHeight; y++) {
+      const cell = blockGrid[y][x]
+      line.push(cell)
+    }
+    newGrid.push(line)
+  }
+  return newGrid
+}
+
+function rotateRandomly(blockType) {
+  const rotations = Math.floor(Math.random() * 4)
+  
+  for (let r = 0; r <= rotations; r++) {
+    blockType.grid = rotate(blockType.grid)
+  }
+
+  return blockType
+}
+
 export function chooseBlock() {
   const allTypes = Object.keys(blockTypes)
   const randomIndex = Math.floor(Math.random() * allTypes.length)
   const randomKey = allTypes[randomIndex]
-  return blockTypes[randomKey]
+  const randomBlock = blockTypes[randomKey]()
+  const rotatedBlock = rotateRandomly(randomBlock)
+  return rotatedBlock
 }

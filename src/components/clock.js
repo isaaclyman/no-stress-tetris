@@ -1,6 +1,7 @@
 class Clock {
   constructor(intervalInMs) {
     this.subscribers = []
+    this.intervalTime = intervalInMs
     this.changeInterval(intervalInMs)
   }
 
@@ -23,6 +24,8 @@ class Clock {
 
   changeInterval(intervalInMs) {
     clearInterval(this.interval)
+    this.intervalTime = intervalInMs
+    this.isRunning = true
     this.interval = setInterval(() => {
       this.subscribers.forEach(s => s())
     }, intervalInMs)
@@ -31,6 +34,20 @@ class Clock {
   destroy() {
     this.subscribers = []
     clearInterval(this.interval)
+    this.isRunning = false
+  }
+
+  pause() {
+    clearInterval(this.interval)
+    this.isRunning = false
+  }
+
+  resume() {
+    this.changeInterval(this.intervalTime)
+  }
+
+  isPaused() {
+    return !this.isRunning
   }
 }
 

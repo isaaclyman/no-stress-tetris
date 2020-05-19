@@ -1,51 +1,111 @@
 <template>
   <div class="grid">
     <div class="line" v-for="(line, lIndex) in grid" :key="`line-${lIndex}`">
-      <div class="cell" v-for="(cell, cIndex) in line" :key="`line-${lIndex}-cell-${cIndex}`">
-        <div v-if="cell.hasBlock" class="block" :style="getStyle(cell)"></div>
-      </div>
+      <template v-if="!clears.includes(lIndex)" >
+        <div class="cell" v-for="(cell, cIndex) in line" :key="`line-${lIndex}-cell-${cIndex}`">
+          <div v-if="cell.hasBlock" class="block" :style="getStyle(cell)"></div>
+        </div>
+      </template>
+      <template v-else>
+        <div class="cell cell-cleared"
+          :class="{ 'cell-clearing': clearing }" 
+          v-for="(cell, cIndex) in line" 
+          :key="`line-${lIndex}-cell-${cIndex}`">
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script>
-import clock from './clock'
-import grid, { isSettled, exertGravity, createBlock } from './grid'
+import Clock from './clock'
+import grid from './grid'
 import { chooseBlock } from './block'
+import { KeyboardListener, Keys } from './keyboard'
 
-const startingSpeedInMs = 100
+const startingSpeedInMs = 700
 
 export default {
   data() {
     return {
+      clearing: false,
+      clears: [],
       clock: null,
-      grid
+      grid: null,
+      keyboardListener: null
     }
   },
   mounted() {
-    this.clock = new clock(startingSpeedInMs)
+    this.grid = grid.grid
+
+    this.clock = new Clock(startingSpeedInMs)
     this.clock.subscribe(() => this.tick())
+
+    this.keyboardListener = new KeyboardListener()
+    this.keyboardListener.subscribe(Keys.Left, () => {
+      grid.moveCurrentBlockLeft()
+    })
+    this.keyboardListener.subscribe(Keys.Right, () => {
+      grid.moveCurrentBlockRight()
+    })
+    this.keyboardListener.subscribe(Keys.Up, () => {
+      grid.rotateCurrentBlock()
+    })
+    this.keyboardListener.subscribe(Keys.Down, () => {
+      this.clock.pause()
+      grid.forceSettle(() => this.clock.resume())
+    })
+    this.keyboardListener.subscribe(Keys.Space, () => {
+      if (this.clock.isPaused()) {
+        this.clock.resume()
+      } else {
+        this.clock.pause()
+      }
+    })
   },
   methods: {
+    beginClearLines(clears, callback) {
+      if (!clears.length) {
+        callback()
+        return
+      }
+
+      this.clock.pause()
+
+      this.clears = clears
+      setTimeout(() => {
+        this.clearing = true
+      }, 100)
+      setTimeout(() => {
+        const clears = this.clears
+        this.clears = []
+        grid.clearLines(clears)
+        this.clearing = false
+        callback()
+        this.clock.resume()
+      }, 600)
+    },
     getStyle(cell) {
       return {
         'background-color': cell.color
       }
     },
     tick() {
-      const settled = isSettled(grid)
+      const settled = grid.isSettled()
       if (!settled) {
-        exertGravity(grid)
+        grid.exertGravity()
       } else {
-        const block = chooseBlock()
-        createBlock(grid, block)
+        const clears = grid.getLineClears()
+        this.beginClearLines(clears, () => {
+          const block = chooseBlock()
+          grid.createBlock(block)
+        })
       }
-
-      // check for line clears
     }
   },
   destroyed() {
     this.clock.destroy()
+    this.keyboardListener.destroy()
   }
 }
 </script>
@@ -61,11 +121,23 @@ export default {
 }
 
 .cell {
-  box-shadow: inset 10px 10px 24px -19px rgba(0,0,0,0.75),
-    inset -10px -10px 24px -19px rgba(255,255,255,1);
+  box-shadow: inset 10px 10px 24px -19px rgba(0,0,0,0.6),
+    inset -10px -10px 24px -19px rgba(255,255,255,0.6);
   height: 30px;
   position: relative;
   width: 30px;
+}
+
+.cell.cell-cleared {
+  background-color: silver;
+  box-shadow: inset 10px 10px 24px -19px rgba(0,0,0,0.75),
+    inset -10px -10px 24px -19px rgba(255,255,255,1);
+  transition: background-color 500ms, box-shadow 500ms;
+}
+
+.cell.cell-cleared.clearing {
+  background-color: #fff;
+  box-shadow: none;
 }
 
 .block {
@@ -77,4 +149,5 @@ export default {
   width: 100%;
   z-index: 2;
 }
+
 </style>
