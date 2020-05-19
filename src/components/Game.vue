@@ -1,5 +1,5 @@
 <template>
-  <div class="grid">
+  <div class="grid" ref="gridEl">
     <div class="line" v-for="(line, lIndex) in grid" :key="`line-${lIndex}`">
       <template v-if="!clears.includes(lIndex)" >
         <div class="cell" v-for="(cell, cIndex) in line" :key="`line-${lIndex}-cell-${cIndex}`">
@@ -24,6 +24,7 @@ import grid from './grid'
 import { chooseBlock } from './block'
 import { KeyboardListener, Keys } from './keyboard'
 import encouragement from './encouragement'
+import Hammer from 'hammerjs'
 
 const startingSpeedInMs = 700
 
@@ -45,24 +46,34 @@ export default {
     this.clock.subscribe(() => this.tick())
 
     this.keyboardListener = new KeyboardListener()
-    this.keyboardListener.subscribe(Keys.Left, () => {
-      grid.moveCurrentBlockLeft()
-    })
-    this.keyboardListener.subscribe(Keys.Right, () => {
-      grid.moveCurrentBlockRight()
-    })
-    this.keyboardListener.subscribe(Keys.Up, () => {
-      grid.rotateCurrentBlock()
-    })
-    this.keyboardListener.subscribe(Keys.Down, () => {
-      this.clock.pause()
-      grid.forceSettle(() => this.clock.resume())
-    })
+    this.keyboardListener.subscribe(Keys.Left, () => grid.moveCurrentBlockLeft())
+    this.keyboardListener.subscribe(Keys.Right, () => grid.moveCurrentBlockRight())
+    this.keyboardListener.subscribe(Keys.Up, () => grid.rotateCurrentBlock())
+    this.keyboardListener.subscribe(Keys.Down, () => this.downKeyInput())
     this.keyboardListener.subscribe(Keys.Space, () => {
       if (this.clock.isPaused()) {
         this.clock.resume()
       } else {
         this.clock.pause()
+      }
+    })
+
+    const mc = new Hammer.Manager(this.$refs.gridEl)
+    mc.add(new Hammer.Swipe({ direction: Hammer.DIRECTION_ALL, threshold: 10 }))
+    mc.on('swipe', e => {
+      switch (e.direction) {
+        case Hammer.DIRECTION_LEFT:
+          grid.moveCurrentBlockLeft()
+          break
+        case Hammer.DIRECTION_RIGHT:
+          grid.moveCurrentBlockRight()
+          break
+        case Hammer.DIRECTION_UP:
+          grid.rotateCurrentBlock()
+          break
+        case Hammer.DIRECTION_DOWN:
+          this.downKeyInput()
+          break
       }
     })
   },
@@ -92,6 +103,10 @@ export default {
           this.clock.resume()
         })
       }, 1000)
+    },
+    downKeyInput() {
+      this.clock.pause()
+      grid.forceSettle(() => this.clock.resume())
     },
     getEncouragement() {
       const randomIndex = Math.floor(Math.random() * encouragement.length)
