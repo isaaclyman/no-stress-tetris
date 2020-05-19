@@ -1,12 +1,19 @@
 const width = 12
 const height = 18
 
+function defaultValue() {
+  return {
+    hasBlock: 0,
+    color: null
+  }
+}
+
 function makeGrid() {
   const grid = []
   for (let h = 1; h <= height; h++) {
     const line = []
     for (let w = 1; w <= width; w++) {
-      line.push(0)
+      line.push(defaultValue())
     }
     grid.push(line)
   }
@@ -27,7 +34,7 @@ export function isSettled(grid) {
 
 function isCellSettled(grid, lineIndex, cellIndex) {
   const cell = grid[lineIndex][cellIndex]
-  if (!cell) {
+  if (!cell.hasBlock) {
     return true
   }
 
@@ -36,7 +43,7 @@ function isCellSettled(grid, lineIndex, cellIndex) {
   }
 
   const downOneCell = grid[lineIndex + 1][cellIndex]
-  if (downOneCell) {
+  if (downOneCell.hasBlock) {
     return true
   }
 
@@ -50,20 +57,20 @@ export function exertGravity(grid) {
     const line = grid[lIndex]
     for (let cIndex = 0; cIndex < line.length; cIndex++) {
       const cell = line[cIndex]
-      if (!cell) {
+      if (!cell.hasBlock) {
         continue
       }
 
       if (lIndex === grid.length - 1) {
-        hypotheticalGrid[lIndex].splice(cIndex, 1, 1)
+        hypotheticalGrid[lIndex].splice(cIndex, 1, cell)
         continue
       }
 
       let downOneCell = hypotheticalGrid[lIndex + 1][cIndex]
-      if (downOneCell) {
-        hypotheticalGrid[lIndex].splice(cIndex, 1, 1)
+      if (downOneCell.hasBlock) {
+        hypotheticalGrid[lIndex].splice(cIndex, 1, cell)
       } else {
-        hypotheticalGrid[lIndex + 1].splice(cIndex, 1, 1)
+        hypotheticalGrid[lIndex + 1].splice(cIndex, 1, cell)
       }
     }
   }
@@ -89,7 +96,10 @@ export function createBlock(grid, block) {
 
   for (let lIndex = 0; lIndex < blockHeight; lIndex++) {
     for (let cIndex = 0; cIndex < blockWidth; cIndex++) {
-      grid[lIndex + y].splice(cIndex + x, 1, block.grid[y][x])
+      grid[lIndex + y].splice(cIndex + x, 1, {
+        hasBlock: block.grid[lIndex][cIndex],
+        color: block.color
+      })
     }
   }
 
@@ -101,7 +111,7 @@ function findSpace(grid, width, height) {
     const line = grid[lIndex]
     for (let cIndex = 0; cIndex < line.length; cIndex++) {
       const cell = line[cIndex]
-      if (cell) {
+      if (cell.hasBlock) {
         continue
       }
 
@@ -126,7 +136,7 @@ function isThereSpace(grid, lIndex, cIndex, width, height) {
       }
 
       const cell = grid[lIndex + y][cIndex + x]
-      if (cell) {
+      if (cell.hasBlock) {
         return false
       }
     }

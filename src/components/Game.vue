@@ -2,7 +2,7 @@
   <div class="grid">
     <div class="line" v-for="(line, lIndex) in grid" :key="`line-${lIndex}`">
       <div class="cell" v-for="(cell, cIndex) in line" :key="`line-${lIndex}-cell-${cIndex}`">
-        <div v-if="cell" class="block"></div>
+        <div v-if="cell.hasBlock" class="block" :style="getStyle(cell)"></div>
       </div>
     </div>
   </div>
@@ -13,7 +13,7 @@ import clock from './clock'
 import grid, { isSettled, exertGravity, createBlock } from './grid'
 import { chooseBlock } from './block'
 
-const startingSpeedInMs = 600
+const startingSpeedInMs = 100
 
 export default {
   data() {
@@ -27,8 +27,12 @@ export default {
     this.clock.subscribe(() => this.tick())
   },
   methods: {
+    getStyle(cell) {
+      return {
+        'background-color': cell.color
+      }
+    },
     tick() {
-      console.log('tick')
       const settled = isSettled(grid)
       if (!settled) {
         exertGravity(grid)
